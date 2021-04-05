@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.81.0" />
+
+
+<title>How special is Mike Trout? - A Hugo website</title>
+<meta property="og:title" content="How special is Mike Trout? - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/rstudio/blogdown">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/rstudio">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">5 min read</span>
+    
+
+    <h1 class="article-title">How special is Mike Trout?</h1>
+
+    
+    <span class="article-date">2021-04-04</span>
+    
+
+    <div class="article-content">
+      
+<script src="/2021/04/04/how-special-is-mike-trout/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Baseball has been part of American history for a long time. Since the beginning of the game the face of Major League Baseball has change throughout time. From Babe Ruth, Jackie Robinson, to Barry Bonds these men have been considered the greatest in their era. Now a new era has been born and this era is fiercely competitive with promising young faces to take the role of “The Face of the MLB.” One that has gained popularity is, Los Angeles Center Fielder, Mike Trout. Now lets look at some stats that make him special.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## v ggplot2 3.3.3     v purrr   0.3.4
+## v tibble  3.0.5     v dplyr   1.0.3
+## v tidyr   1.1.2     v stringr 1.4.0
+## v readr   1.4.0     v forcats 0.5.1</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 4.0.4</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggrepel)</code></pre>
+<pre><code>## Warning: package &#39;ggrepel&#39; was built under R version 4.0.4</code></pre>
+<pre class="r"><code>library(waffle)
+
+players14&lt;-read_csv(&quot;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2014_Batting_Stats.csv&quot;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   .default = col_double(),
+##   Name = col_character(),
+##   Tm = col_character(),
+##   Lg = col_character(),
+##   `Pos Summary` = col_character()
+## )
+## i Use `spec()` for the full column specifications.</code></pre>
+<pre><code>## Warning: 57 parsing failures.
+##  row col expected actual                                                                                                                 file
+## 1406 Rk  a double Tm     &#39;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2014_Batting_Stats.csv&#39;
+## 1406 Age a double BatAge &#39;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2014_Batting_Stats.csv&#39;
+## 1406 G   a double PA     &#39;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2014_Batting_Stats.csv&#39;
+## 1406 PA  a double AB     &#39;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2014_Batting_Stats.csv&#39;
+## 1406 AB  a double R      &#39;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2014_Batting_Stats.csv&#39;
+## .... ... ........ ...... ....................................................................................................................
+## See problems(...) for more details.</code></pre>
+<p>For the first data set I am working with is the 2014 season hitting statistics of all players from Baseball Reference.</p>
+<p>I first created a condition where I only took players from both the “AL” and “NL” and called it “MLB.” That way I didn’t have any players that were called up from the Minors and free agents who either got signed or released.</p>
+<pre class="r"><code>MLB&lt;- c(&quot;AL&quot;, &quot;NL&quot;)</code></pre>
+<p>Now I needed to get rid of players who did not have enough at bats to get an actual and reasonable stat from them. So I filtered the players so they had a minimum of 502 at bats.</p>
+<pre class="r"><code>goodhitters14&lt;- players14%&gt;%
+  filter(AB&gt;=502, Lg %in% MLB)</code></pre>
+<p>The first question I wanted to answer was, how does Mike Trout compared in his first MVP season to the rest of the best hitters in Slugging Percentage? Here are the best 10 hitters in terms of Slugging Percentage.</p>
+<pre class="r"><code>top10&lt;- goodhitters14%&gt;%
+  arrange(desc(SLG))%&gt;%
+    select(Name, SLG)%&gt;%
+  top_n(10)</code></pre>
+<pre><code>## Selecting by SLG</code></pre>
+<pre class="r"><code>ggplot() + 
+  geom_bar(data=top10, aes(x=reorder(Name,-SLG), weight=SLG))+
+  labs(
+    title=&quot;Slugging Percent Leaders in 2014&quot;, 
+    x=&quot;Name&quot;, 
+    y=&quot;SLG&quot;) +  labs(x=&quot;Players&quot;, y=&quot;Slugging Percentage&quot;, title=&quot;Best of the sluggers&quot;, subtitle=&quot;Trout ups Big Papi, and other big hitters in Slugging Percentage&quot;, caption=&quot;Source: Baseball Refrence | By Brandon Warnke&quot;)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 20, face = &quot;bold&quot;),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+        )+
+  coord_flip()</code></pre>
+<p><img src="/2021/04/04/how-special-is-mike-trout/index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+Mike Trout was impressively the third best hitter in Slugging Percentage. Given that he was 24, in his fourth season, and was named AL MVP, he is topping some of the great sluggers like Big Papi, Miggy, and Giancarlo Stanton.</p>
+<p>However, he was not first in that category, what stat really breaks him apart from the whole league? This question I used a bubble chart and looked into Trout’s 2016 MVP season to compare his On Base Percentage, Base on Balls, and used his On Base plus Slugging as the bubble.</p>
+<pre class="r"><code>players16&lt;-read_csv(&quot;~/SPMC 350/Brandon_Warnke_Create_Blog/content/post/2021-04-04-how-special-is-mike-trout/MLB_2016_Batting_Stats.csv&quot;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   .default = col_double(),
+##   Rk = col_character(),
+##   Name = col_character(),
+##   Tm = col_character(),
+##   Lg = col_character(),
+##   `Pos Summary` = col_character()
+## )
+## i Use `spec()` for the full column specifications.</code></pre>
+<pre class="r"><code>MLB&lt;-c(&quot;AL&quot;,&quot;NL&quot;)
+hitter&lt;-players16%&gt;%
+  filter(AB&gt;=502, Lg %in% MLB)
+Mike&lt;-hitter%&gt;%
+  filter(Name==&quot;Mike Trout&quot;)
+hitter%&gt;%
+  summarise(
+    obp=mean(OBP),
+    bb=mean(BB))</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##     obp    bb
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1 0.343  55.9</code></pre>
+<p>I did the same thing like the last graph making a dataframe for the MLB, and filtering by at bats. Also, I made a dataframe for Mike Trout to highlight his name in the bubble chart. Lastly I took the “hitter” dataframe and got the leagues averages for OBP and BB for the geom_vline and geom_hline.</p>
+<pre class="r"><code>ggplot() + 
+  geom_point(
+    data=hitter, 
+    aes(x=OBP, y=BB, size=OPS), 
+    color=&quot;grey&quot;, 
+    alpha=.5) + 
+  geom_point(
+    data=Mike, 
+    aes(x=OBP, y=BB, size=OPS), 
+    color=&quot;red&quot;) + 
+  geom_vline(xintercept = 0.3433304) + 
+  geom_hline(yintercept = 55.89565) + 
+  geom_text_repel(
+    data=Mike, 
+    aes(x=OBP, y=BB, label=Name))+
+  labs(x=&quot;On Base Percentage&quot;, y=&quot;Base on Balls&quot;, title=&quot;Mike Trout shines in 2016&quot;, subtitle=&quot;Amoung the 2016 best hitters, Mike Trout is best when it comes to OPS, OBP, and BB&quot;, caption=&quot;Source: Baseball Refrence | By Brandon Warnke&quot;) + 
+  theme_minimal()+
+  theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )</code></pre>
+<p><img src="/2021/04/04/how-special-is-mike-trout/index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+As you can see Mike Trout is well beyond the average of Walks and On Base Percentage. Which he led in both, plus he had one of the top OPS in his 2016 MVP season.</p>
+<p>Now what about a stat where Trout is chasing history?</p>
+<pre class="r"><code>WAR &lt;- c(&quot;Mike Trout&quot;=74, &quot;Babe Ruth&quot;=64)
+waffle(
+        WAR, 
+        rows = 10, 
+        xlab=&quot;1 square = 1 point&quot;, 
+        colors = c(&quot;red&quot;, &quot;black&quot;))+
+   labs(title=&quot;Trout chasing greatness&quot;, subtitle=&quot;Mike Trout on pace to break Babe Ruth&#39;s career WAR record.&quot;, caption=&quot;Source: Baseball Reference | Graphic by Brandon Warnke&quot;)+
+   theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    axis.title = element_text(size = 10),
+    axis.title.y = element_blank())</code></pre>
+<p><img src="/2021/04/04/how-special-is-mike-trout/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+Comparing the first 10 seasons of both Mike Trout and the Great Bambino, in this waffle chart, Trout is ahead of Ruth’s pace of Wins After Replacement. He is ahead by 10 whole points and if he keeps this pace he will break the record which has been nearly held for 86 years.</p>
+<p>Mike Trout has been working up since his rookie season and has cemented himself very quickly as one of the best players in the Majors. The now 29-year-old outfielder is striving for greatness and history.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+
+    
+  </body>
+</html>
+
